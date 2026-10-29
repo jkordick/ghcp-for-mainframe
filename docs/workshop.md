@@ -40,7 +40,7 @@ Welcome! This workshop has two parts:
 
 <div class="warning" data-title="Heads up">
 
-> GitHub Copilot evolves quickly. UI labels, menu locations and feature names may shift between releases. If something looks slightly different in your VS Code, search the Command Palette (`Cmd/Ctrl+Shift+P`) — the feature is almost certainly still there.
+> GitHub Copilot evolves quickly. UI labels, menu locations and feature names may shift between releases. If something looks slightly different in your VS Code, search the Command Palette (macOS `Cmd+Shift+P`, Windows `Ctrl+Shift+P`) — the feature is almost certainly still there.
 
 </div>
 
@@ -117,9 +117,18 @@ You will use four surfaces:
 
 ### Inline completions
 
-Start typing and Copilot suggests grey inline completions. Accept with `Tab`, dismiss with `Esc`, cycle alternatives with `Alt/Option + ]` / `Alt/Option + [`
+Start typing and Copilot suggests grey inline completions. The default VS Code shortcuts (see [Keyboard shortcuts for GitHub Copilot](https://docs.github.com/en/copilot/reference/keyboard-shortcuts)):
 
-> Tip: Check your configured shortcuts under `Ctrl + Shift + P` or `Cmd + Shift + P` -> `Open Keyboard Shortcuts`.
+| Action | macOS | Windows |
+| --- | --- | --- |
+| Accept suggestion | `Tab` | `Tab` |
+| Dismiss suggestion | `Esc` | `Esc` |
+| Next suggestion | `Option+]` | `Alt+]` |
+| Previous suggestion | `Option+[` | `Alt+[` |
+| Trigger suggestion | `Option+\` | `Alt+\` |
+| Open more suggestions in a separate pane | `Ctrl+Enter` | `Ctrl+Enter` |
+
+> Tip: Check your configured shortcuts via the Command Palette (macOS `Cmd+Shift+P`, Windows `Ctrl+Shift+P`) -> `Preferences: Open Keyboard Shortcuts`.
 
 **Try it.** Create a scratch file `INTCALC.cbl` in the repo root and type (fixed format — code starts in column 8):
 
@@ -141,11 +150,11 @@ Let Copilot propose the data items, then type `       PROCEDURE DIVISION.` and l
 
 and a comment `* ISA accounts get a 0.5 percent bonus rate` in the procedure division — and watch how *prior context in the file* steers the next suggestion. Check what the suggestion does with money: does it use `COMPUTE … ROUNDED` on fixed-point `PIC S9(n)V99` fields, or does it drift into `COMP-2` floating point? Delete the scratch file afterwards.
 
-### Inline chat (`Cmd/Ctrl + I`)
+### Inline chat (macOS `Cmd+I`, Windows `Ctrl+I`)
 
-Open `src/base/cics/cobol/XFRFUN.cbl` (the funds-transfer back-end), select the `UPDATE-ACCOUNT-DB2-FROM SECTION` (around line 919), press `Cmd/Ctrl + I` and ask: *"add comments explaining the SQLCODE handling"*. Review the diff before you accept — or discard it, the point is to see a targeted edit to a selection. Did Copilot explain what *Storm Drain* means, or did it guess?
+Open `src/base/cics/cobol/XFRFUN.cbl` (the funds-transfer back-end), select the `UPDATE-ACCOUNT-DB2-FROM SECTION` (around line 919), press `Cmd+I` (macOS) / `Ctrl+I` (Windows) and ask: *"add comments explaining the SQLCODE handling"*. Review the diff before you accept — or discard it, the point is to see a targeted edit to a selection. Did Copilot explain what *Storm Drain* means, or did it guess?
 
-### Chat view (`Cmd/Ctrl+Alt+I`)
+### Chat view (macOS `Ctrl+Cmd+I`, Windows `Ctrl+Alt+I`)
 
 The Chat side panel in "Ask" mode is for conversation about your code. Use `#` to attach context (files, symbols, selection) and `/` for built-in commands (`/explain`, `/fix`, `/tests`, `/new`).
 
@@ -176,7 +185,7 @@ Keep the answer — you will compare it with a deterministic tool in 1.6.
 
 </div>
 
-> **In the Copilot CLI:** there is no Ask/Agent toggle — the CLI is always agentic. Cycle into *plan mode* with `Shift+Tab` to design before changes are made, and use `--allow-all` (or `--yolo`) for unattended runs where you accept the risk of skipping approval prompts.
+> **In the Copilot CLI:** there is no Ask/Agent toggle — the CLI is always agentic. Cycle into *plan mode* with `Shift+Tab` (macOS and Windows) to design before changes are made, and use `--allow-all` (or `--yolo`) for unattended runs where you accept the risk of skipping approval prompts.
 
 ## 1.2 GitHub Copilot CLI
 ![GitHub Copilot CLI](assets/cli.png)
@@ -215,7 +224,7 @@ Create `.github/prompts/explain-program.prompt.md`:
 
 <div class="tip" data-title="Tip">
 
-> You can either create it manually or `CTRL/CMD + Shift + P` -> New Prompt File...
+> You can either create it manually or open the Command Palette (macOS `Cmd+Shift+P`, Windows `Ctrl+Shift+P`) -> *New Prompt File...*
 
 </div>
 
@@ -256,7 +265,7 @@ Create `.github/agents/cobol-reviewer.agent.md`:
 
 <div class="tip" data-title="Tip">
 
-> Same trick available like above. With `CTRL/CMD + Shift + P`-> Create new agent...
+> Same trick as above: Command Palette (macOS `Cmd+Shift+P`, Windows `Ctrl+Shift+P`) -> *Create new agent...*
 
 </div>
 
@@ -295,7 +304,7 @@ See [Creating custom agents](https://docs.github.com/en/copilot/how-tos/copilot-
 
 If you know *how* something should be done (e.g. "find every dependency of a COBOL program"), you can package that knowledge — instructions plus scripts — as a skill, and let the agent load it on demand.
 
-Skills live in `.github/skills/` (project) or `~/.copilot/skills/` (personal). Create one with `Cmd/Ctrl+Shift+P` → *Generate Skill…* or type `/create-skill` in Chat.
+Skills live in `.github/skills/` (project) or `~/.copilot/skills/` (personal). Create one with the Command Palette (macOS `Cmd+Shift+P`, Windows `Ctrl+Shift+P`) → *Generate Skill…* or type `/create-skill` in Chat.
 
 Your fork ships with three skills in [`.github/skills/`](https://github.com/jkordick/Bank-of-Z/tree/main/.github/skills):
 
@@ -338,7 +347,7 @@ Configure custom MCP servers per workspace in `.vscode/mcp.json`, e.g. the GitHu
 }
 ```
 
-> **In the Copilot CLI:** the GitHub MCP server is preconfigured. Add more with `/mcp add` (interactive form, save with `Ctrl+S`). The CLI does not read `.vscode/mcp.json` — server definitions live in `~/.copilot/mcp-config.json` (or wherever `COPILOT_HOME` points).
+> **In the Copilot CLI:** the GitHub MCP server is preconfigured. Add more with `/mcp add` (interactive form, save with `Ctrl+S` — on macOS too). The CLI does not read `.vscode/mcp.json` — server definitions live in `~/.copilot/mcp-config.json` (or wherever `COPILOT_HOME` points).
 
 Once connected, Agent mode can call those tools by name.
 
