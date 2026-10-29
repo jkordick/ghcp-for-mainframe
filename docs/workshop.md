@@ -113,6 +113,18 @@ Every exercise in this chapter uses your clone of Bank of Z. Open it in VS Code 
 
 ## 1.1 Copilot in VS Code
 
+<div class="warning" data-title="Use the Local harness for this workshop">
+
+> VS Code can run chat sessions in different [agent harnesses](https://code.visualstudio.com/docs/agents/run/agent-harnesses). The default is **Copilot**, the same runtime as the Copilot CLI. This workshop relies on **prompt files** (1.4, Chapter 2), and the Copilot harness [does not load `*.prompt.md` files](https://code.visualstudio.com/docs/agent-customization/migrate-customizations#_convert-prompt-files-to-skills). Only the **Local** harness does. For every chat in this workshop:
+>
+> 1. In the Chat view, select **New Chat** (`+`).
+> 2. Open the **Session Target** picker in the chat input and select **Local**.
+> 3. Check: the chat title now starts with *Local*.
+>
+> Pick the harness **before** you send the first prompt. You can't change it later in the same session. Custom instructions, custom agents, skills and `.vscode/mcp.json` all work in Local.
+
+</div>
+
 You will use four surfaces:
 
 ### Inline completions
@@ -168,7 +180,7 @@ Ask a follow-up: *"which DB2 tables does it read and write, and in which order?"
 
 ### Agent mode
 
-In the Chat view, switch the mode picker from **Ask** to **Agent**. Agent mode can read, create and edit files across your workspace, run commands (with your approval) and iterate until a task is done. This is the surface you will lean on most in Chapter 2.
+In a Local chat, switch the agent picker from **Ask** to **Agent**. Agent mode can read, create and edit files across your workspace, run commands (with your approval) and iterate until a task is done. This is the surface you will lean on most in Chapter 2.
 
 **Try it.** In Agent mode, ask:
 
@@ -218,23 +230,25 @@ Your fork ships with one [`.github/copilot-instructions.md`](https://github.com/
 
 ## 1.4 Prompt files
 
-Prompt files (`*.prompt.md`) are **reusable prompts** stored in your repo. They show up in Chat as runnable commands.
+Prompt files (`*.prompt.md`) are **reusable prompts** stored in your repo under `.github/prompts/`. In a **Local** chat they show up as slash commands. See [Use prompt files in VS Code](https://code.visualstudio.com/docs/agent-customization/prompt-files).
 
 Create `.github/prompts/explain-program.prompt.md`:
 
 <div class="tip" data-title="Tip">
 
-> You can either create it manually or open the Command Palette (macOS `Cmd+Shift+P`, Windows `Ctrl+Shift+P`) -> *New Prompt File...*
+> Create it by hand, run **Chat: New Prompt File** from the Command Palette (macOS `Cmd+Shift+P`, Windows `Ctrl+Shift+P`), or open **Chat: Open Customizations** → *Prompts*. In a Local chat you can also type `/create-prompt` to let Copilot generate one.
 
 </div>
 
 ```markdown
 ---
-agent: agent
+name: explain-program
 description: Explain one COBOL program in a fixed, reviewable structure
+argument-hint: Program name, e.g. INQCUST
+agent: agent
 tools: ['read', 'search']
 ---
-Explain the COBOL program ${input:program:Program name, e.g. INQCUST}. Find it under `src/base/`.
+Explain the COBOL program named in the chat input. Find it under `src/base/`.
 Answer with exactly these sections and cite `path/to/file:LINE` for every claim:
 
 1. **Purpose** — one paragraph, business language.
@@ -246,16 +260,22 @@ Answer with exactly these sections and cite `path/to/file:LINE` for every claim:
 If something cannot be determined from the code, write "unknown" — do not guess.
 ```
 
-Run it from Chat with `/explain-program` and try `INQCUST`, then `DBCRFUN`.
+Run it in a Local chat with `/explain-program INQCUST`, then `/explain-program DBCRFUN`. Two other ways to run a prompt file:
+
+- Run **Chat: Run Prompt** from the Command Palette and pick the prompt.
+- Open the prompt file and select the play button in the editor title bar.
 
 <div class="tip" data-title="Prompt not showing up?">
 
-> Prompt files run in a **Local** chat session. If `/explain-program` is not offered, check the session-type picker in the Chat view and switch to *Local* (instead of e.g. a Copilot CLI or Cloud session).
+> 1. Check the chat title. If it doesn't start with *Local*, you are in the Copilot harness, which ignores prompt files. Start a **New Chat** (`+`) and select **Local** in the **Session Target** picker (see 1.1).
+> 2. Check that the file is in `.github/prompts/` and ends in `.prompt.md`.
+> 3. Still missing? In the Chat view, select **…** → **Show Agent Debug Logs** to see which customization files were loaded.
 
 </div>
- Prompt files are the *primitive* the whole modernization kit in Chapter 2 is built on.
 
-> **In the Copilot CLI:** `.prompt.md` files are a VS Code Chat feature and are not exposed as slash commands in the CLI. For reusable workflows in the CLI, reach for custom agents (1.5) or skills (1.6) instead — or just paste the prompt body into your session.
+Prompt files are the *primitive* the whole modernization kit in Chapter 2 is built on.
+
+> **In the Copilot CLI:** the CLI runs the Copilot harness, so `.prompt.md` files are not available as slash commands. For reusable workflows in the CLI, reach for custom agents (1.5) or skills (1.6) instead — or just paste the prompt body into your session.
 
 ## 1.5 Custom agents
 
@@ -304,7 +324,7 @@ See [Creating custom agents](https://docs.github.com/en/copilot/how-tos/copilot-
 
 If you know *how* something should be done (e.g. "find every dependency of a COBOL program"), you can package that knowledge — instructions plus scripts — as a skill, and let the agent load it on demand.
 
-Skills live in `.github/skills/` (project) or `~/.copilot/skills/` (personal). Create one with the Command Palette (macOS `Cmd+Shift+P`, Windows `Ctrl+Shift+P`) → *Generate Skill…* or type `/create-skill` in Chat.
+Skills live in `.github/skills/` (project) or `~/.copilot/skills/` (personal). Create one with **Chat: Open Customizations** → *Skills* → **New Skill**, or type `/create-skill` in a Local chat.
 
 Your fork ships with three skills in [`.github/skills/`](https://github.com/jkordick/Bank-of-Z/tree/main/.github/skills):
 
@@ -334,7 +354,7 @@ The [Model Context Protocol](https://modelcontextprotocol.io) lets GitHub Copilo
 
 In VS Code open the `Extensions` tab and type `@mcp` to see all available MCP servers.
 
-Configure custom MCP servers per workspace in `.vscode/mcp.json`, e.g. the GitHub MCP server:
+Configure custom MCP servers per workspace in `.vscode/mcp.json` (read by the Local harness; the Copilot harness and the CLI use [other files](https://code.visualstudio.com/docs/agent-customization/migrate-customizations#_migrate-mcp-servers)), e.g. the GitHub MCP server:
 
 ```json
 {
@@ -558,8 +578,8 @@ All workshop output goes to `docs/modernization/` in your fork (Bank of Z's own 
 
 **How to invoke them.**
 
-- **In VS Code:** open Copilot Chat in a **Local** session, type `/` and pick the prompt by name (they show up as `01-rediscovery-source-of-truth`, `01-rediscovery-bootstrap`, …). Copilot switches to the pinned agent, runs the prompt, produces the artifact, then stops.
-- **In the Copilot CLI:** prompt files are a VS Code Chat feature and are not exposed as slash commands. Pick the agent with `/agent` and paste the prompt body (or ask it to *"follow `.github/prompts/01-rediscovery-bootstrap.prompt.md`"*).
+- **In VS Code:** start a **New Chat** with **Local** selected in the **Session Target** picker (see 1.1), type `/` and pick the prompt by name (they show up as `01-rediscovery-source-of-truth`, `01-rediscovery-bootstrap`, …). Copilot switches to the pinned agent, runs the prompt, produces the artifact, then stops.
+- **In the Copilot CLI:** the CLI runs the Copilot harness, which does not load prompt files. Pick the agent with `/agent` and paste the prompt body (or ask it to *"follow `.github/prompts/01-rediscovery-bootstrap.prompt.md`"*).
 
 **The execution pattern is the same for every prompt.** Run one prompt → review the diff → commit → run the next. Each prompt writes to a named artifact under `docs/modernization/<phase>/`, cites `path/to/file:LINE` for anything specific, and stops. If it hits ambiguity, it appends to `docs/modernization/01-rediscovery/open-questions.md` instead of guessing. This is what makes the flow reviewable and controllable: every step is a small, git-diffable change against a persistent artifact — no big-bang generations, no invented behavior.
 
