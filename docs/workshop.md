@@ -23,18 +23,18 @@ navigation_numbering: false
 
 Welcome! This workshop has two parts:
 
-1. **Getting Started with GitHub Copilot**: a single broad chapter for anyone who has never (or barely) used GitHub Copilot. It covers inline completions, Chat, Agent mode, agent harnesses, the Copilot CLI, custom instructions, prompt files, custom agents, skills and MCP servers — all on real COBOL.
+1. **Getting Started with GitHub Copilot**: a single broad chapter for anyone who has never (or barely) used GitHub Copilot. It covers inline completions, Chat, Agent mode, agent harnesses, the Copilot CLI, custom instructions, prompt files, custom agents, skills and MCP servers.
 2. **Mainframe App Modernization**: how to use GitHub Copilot to modernize a mainframe application *without losing the business rules baked into it*. You work through four phases — rediscovery, substitution audit, re-architecture/re-write and deployment — on IBM's [Bank of Z](https://github.com/IBM/Bank-of-Z) with a pre-built kit of custom agents, prompt files and skills. A deterministic COBOL parser ([cobol-rekt](https://github.com/avishek-sen-gupta/cobol-rekt)) builds a *source of truth* that every LLM-written claim is checked against.
 
 <div class="info" data-title="Who is this for?">
 
-> Mainframe developers, modernization architects and tech leads who want to use agentic AI on COBOL / CICS / DB2 / IMS code bases — and want to know where it helps, where it fails, and how to tell the difference. No prior Copilot experience is required; Chapter 1 is designed to help you catch up fast. Basic COBOL reading skills help, but are not mandatory.
+> Mainframe developers, modernization architects and tech leads who want to use agentic AI on COBOL / CICS / DB2 / IMS code bases — and want to know where it helps, where it fails, and how to tell the difference. No prior GitHub Copilot experience is required; Chapter 1 is designed to help you catch up fast. General understanding of Agentic AI will help. Basic COBOL reading skills help, but are not mandatory.
 
 </div>
 
 <div class="info" data-title="No mainframe required">
 
-> Everything in this workshop runs on your laptop against the *source code* of Bank of Z. You do **not** need access to z/OS, CICS, DB2 or IMS. The agents are explicitly told not to try to compile, deploy or run anything on a mainframe.
+> Everything in this workshop runs on your laptop or in a GitHub Codespace against the *source code* of Bank of Z. You do **not** need access to z/OS, CICS, DB2 or IMS. The agents are explicitly told not to try to compile, deploy or run anything on a mainframe.
 
 </div>
 
@@ -63,24 +63,20 @@ You need the following before starting:
 | A GitHub account | [Create free GitHub account](https://github.com/join) |
 | GitHub Copilot access | Free, Pro, Business or Enterprise — see below |
 | Visual Studio Code | [Download](https://code.visualstudio.com/). Chats in this workshop use the **Local** agent harness (see 1.1) |
-| GitHub Copilot extension(s) | [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) and [Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat) |
-| Java 21+ | Any JDK, e.g. [Microsoft Build of OpenJDK](https://learn.microsoft.com/java/openjdk/download) — runs the cobol-rekt parser in Chapter 2 |
-| Python 3.9+ | [Install](https://www.python.org/downloads/) — turns the parser output into readable Markdown |
+| GitHub Copilot extension(s) in VS Code | [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) and [Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat) |
+| Java 21+ | Any JDK, e.g. [Microsoft Build of OpenJDK](https://learn.microsoft.com/java/openjdk/download) |
+| Python 3.9+ | [Install](https://www.python.org/downloads/) |
 | GitHub CLI | [Install](https://cli.github.com/) |
 | GitHub Copilot CLI | [Install](https://github.com/github/copilot-cli) |
-| A terminal | bash or zsh. On Windows use **Git Bash** or **WSL** — the skills ship as bash scripts |
+| A terminal | bash or zsh. On Windows use **Git Bash** or **WSL** — the agent skills ship as bash scripts |
 | IBM Z Open Editor *(optional)* | [VS Code extension](https://marketplace.visualstudio.com/items?itemName=IBM.zopeneditor) — COBOL syntax highlighting, outline and copybook navigation |
 | A fork of Bank of Z | [Fork `jkordick/Bank-of-Z`](https://github.com/jkordick/Bank-of-Z/fork) and clone your fork locally. It is IBM's Bank of Z plus a ready-made `.github/` folder (agents, prompts, skills, instructions) for this workshop |
 
-```bash
-gh repo fork jkordick/Bank-of-Z --clone
-cd Bank-of-Z
-code .
-```
+![Bank of Z fork](./assets/bankofz-fork.png)
 
 <div class="tip" data-title="Why a fork of a fork?">
 
-> [`jkordick/Bank-of-Z`](https://github.com/jkordick/Bank-of-Z) is [IBM/Bank-of-Z](https://github.com/IBM/Bank-of-Z) unchanged, plus `.github/agents`, `.github/prompts`, `.github/skills` and `.github/copilot-instructions.md`. Forking it gives you your own copy to commit modernization artifacts to — nothing to copy around by hand.
+> [`jkordick/Bank-of-Z`](https://github.com/jkordick/Bank-of-Z) is [IBM/Bank-of-Z](https://github.com/IBM/Bank-of-Z) unchanged, plus `.github/agents`, `.github/prompts`, `.github/skills` and `.github/copilot-instructions.md`. Forking it gives you your own copy to commit modernization artifacts to as you do not have the rights to commit to [`jkordick/Bank-of-Z`](https://github.com/jkordick/Bank-of-Z).
 
 </div>
 
@@ -103,7 +99,7 @@ code .
 
 > If you have never (or only barely) used GitHub Copilot, **start here**. This chapter is intentionally broad. Skip (parts of) it if you are already familiar and comfortable.
 
-Every exercise in this chapter uses your clone of Bank of Z. Open it in VS Code before you start.
+Every exercise in this chapter uses your fork of Bank of Z. Open it in VS Code before you start.
 
 <div class="info" data-title="Bank of Z in one minute">
 
@@ -176,11 +172,11 @@ Let Copilot propose the data items, then type `       PROCEDURE DIVISION.` and l
           88 ACCOUNT-IS-ISA      VALUE 'ISA'.
 ```
 
-and a comment `* ISA accounts get a 0.5 percent bonus rate` in the procedure division — and watch how *prior context in the file* steers the next suggestion. Check what the suggestion does with money: does it use `COMPUTE … ROUNDED` on fixed-point `PIC S9(n)V99` fields, or does it drift into `COMP-2` floating point? Delete the scratch file afterwards.
+and a comment `* ISA accounts get a 0.5 percent bonus rate` in the procedure division then watch how *prior context in the file* steers the next suggestion. Check what the suggestion does. If you are not happy with the output try adding more context in form of comments. Delete the scratch file afterwards.
 
 ### Inline chat (macOS `Cmd+I`, Windows `Ctrl+I`)
 
-Open `src/base/cics/cobol/XFRFUN.cbl` (the funds-transfer back-end), select the `UPDATE-ACCOUNT-DB2-FROM SECTION` (around line 919), press `Cmd+I` (macOS) / `Ctrl+I` (Windows) and ask: *"add comments explaining the SQLCODE handling"*. Review the diff before you accept — or discard it, the point is to see a targeted edit to a selection. Did Copilot explain what *Storm Drain* means, or did it guess?
+Open `src/base/cics/cobol/XFRFUN.cbl` (the funds-transfer back-end), select the `UPDATE-ACCOUNT-DB2-FROM SECTION` (around line 919), press `Cmd+I` (macOS) / `Ctrl+I` (Windows) and ask: *"add comments explaining the SQLCODE handling"*. Review the diff before you accept or discard it. 
 
 ### Chat view (macOS `Ctrl+Cmd+I`, Windows `Ctrl+Alt+I`)
 
@@ -206,7 +202,7 @@ In a Local chat, switch the agent picker from **Ask** to **Agent**. Agent mode c
 Read src/base/cics/cobol/BNKMENU.cbl and draw a mermaid diagram of every program it LINKs or XCTLs to and every transaction it hands control to. Cite file:line for every arrow. Do not change any files.
 ```
 
-Keep the answer — you will compare it with a deterministic tool in 1.6.
+Keep the answer — you will compare it with a deterministic tool output in 1.6.
 
 <div class="tip" data-title="Pick the right built-in agent">
 
