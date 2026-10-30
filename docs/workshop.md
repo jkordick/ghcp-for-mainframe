@@ -70,13 +70,17 @@ You need the following before starting:
 | GitHub Copilot CLI | [Install](https://github.com/github/copilot-cli) |
 | A terminal | bash or zsh. On Windows use **Git Bash** or **WSL** — the agent skills ship as bash scripts |
 | IBM Z Open Editor *(optional)* | [VS Code extension](https://marketplace.visualstudio.com/items?itemName=IBM.zopeneditor) — COBOL syntax highlighting, outline and copybook navigation |
-| A fork of Bank of Z | [Fork `jkordick/Bank-of-Z`](https://github.com/jkordick/Bank-of-Z/fork) and clone your fork locally. It is IBM's Bank of Z plus a ready-made `.github/` folder (agents, prompts, skills, instructions) for this workshop |
+| A fork of Bank of Z | [Fork `jkordick/Bank-of-Z`](https://github.com/jkordick/Bank-of-Z/fork), then clone your fork locally or open it in a GitHub Codespace (see below). It is IBM's Bank of Z plus a ready-made `.github/` folder (agents, prompts, skills, instructions) for this workshop |
 
 ![Bank of Z fork](./assets/bankofz-fork.png)
 
+**Working in a Codespace instead of locally?** On *your fork*, select **Code** → **Codespaces** → **Create codespace on main**. The fork ships a [dev container](https://github.com/jkordick/Bank-of-Z/blob/main/.devcontainer/devcontainer.json) with everything this workshop needs: Java 21, Python 3.12, the GitHub CLI, the GitHub Copilot CLI and the Copilot, Copilot Chat and IBM Z Open Editor extensions. The first build takes a few minutes. The codespace then opens VS Code in the browser with your fork checked out. You can skip installing the tools from the table above.
+
+![Create a codespace on your fork](./assets/create-codespace.png)
+
 <div class="tip" data-title="Why a fork of a fork?">
 
-> [`jkordick/Bank-of-Z`](https://github.com/jkordick/Bank-of-Z) is [IBM/Bank-of-Z](https://github.com/IBM/Bank-of-Z) unchanged, plus `.github/agents`, `.github/prompts`, `.github/skills` and `.github/copilot-instructions.md`. Forking it gives you your own copy to commit modernization artifacts to as you do not have the rights to commit to [`jkordick/Bank-of-Z`](https://github.com/jkordick/Bank-of-Z).
+> [`jkordick/Bank-of-Z`](https://github.com/jkordick/Bank-of-Z) is [IBM/Bank-of-Z](https://github.com/IBM/Bank-of-Z) unchanged, plus `.github/agents`, `.github/prompts`, `.github/skills`, `.github/copilot-instructions.md` and a `.devcontainer` for Codespaces. Forking it gives you your own copy to commit modernization artifacts to as you do not have the rights to commit to [`jkordick/Bank-of-Z`](https://github.com/jkordick/Bank-of-Z).
 
 </div>
 

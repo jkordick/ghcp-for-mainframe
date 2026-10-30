@@ -33,7 +33,7 @@ This repository contains only the workshop text. Everything you run lives in the
 - Java 21+ and Python 3.9+ (for the cobol-rekt source of truth)
 - GitHub CLI (`gh`) and the GitHub Copilot CLI
 - bash / zsh (Git Bash or WSL on Windows)
-- A fork of [jkordick/Bank-of-Z](https://github.com/jkordick/Bank-of-Z/fork)
+- A fork of [jkordick/Bank-of-Z](https://github.com/jkordick/Bank-of-Z/fork), cloned locally or opened in a GitHub Codespace (the fork ships a dev container with all tools)
 
 No mainframe access is required. See [the Pre-requisites section of the workshop](docs/workshop.md#pre-requisites) for details.
 
