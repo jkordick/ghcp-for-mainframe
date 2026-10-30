@@ -74,7 +74,7 @@ You need the following before starting:
 
 ![Bank of Z fork](./assets/bankofz-fork.png)
 
-**Working in a Codespace instead of locally?** On *your fork*, select **Code** → **Codespaces** → **Create codespace on main**. The fork ships a [dev container](https://github.com/jkordick/Bank-of-Z/blob/main/.devcontainer/devcontainer.json) with everything this workshop needs: Java 21, Python 3.12, the GitHub CLI, the GitHub Copilot CLI and the Copilot, Copilot Chat and IBM Z Open Editor extensions. The first build takes a few minutes. The codespace then opens VS Code in the browser with your fork checked out. You can skip installing the tools from the table above.
+**Working in a Codespace instead of locally?** On *your fork*, select **Code** → **Codespaces** → **Create codespace on main**. The fork ships a [dev container](https://github.com/jkordick/Bank-of-Z/blob/main/.devcontainer/devcontainer.json) with everything this workshop needs: Java 21, Python 3.12, the GitHub CLI, the GitHub Copilot CLI and the Copilot Chat extension. The first build takes a minute or two. The codespace then opens VS Code in the browser with your fork checked out. You can skip installing the tools from the table above. Add the optional IBM Z Open Editor from the Extensions view if you want it.
 
 ![Create a codespace on your fork](./assets/create-codespace.png)
 
