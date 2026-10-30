@@ -10,7 +10,7 @@ Or read the raw markdown: [`docs/workshop.md`](docs/workshop.md).
 
 ## What you'll learn
 
-1. **Getting Started with GitHub Copilot** — inline completions, Chat, Agent mode, the Copilot CLI, custom instructions, prompt files, custom agents, skills and MCP servers, all on real COBOL.
+1. **Getting Started with GitHub Copilot** — inline completions, Chat, Agent mode, agent harnesses, the Copilot CLI, custom instructions, prompt files, custom agents, skills and MCP servers, all on real COBOL.
 2. **Mainframe App Modernization** — a four-phase, agentic modernization (rediscovery → substitution audit → re-architecture / re-write → deployment) driven by custom agents and prompt files, with a deterministic [cobol-rekt](https://github.com/avishek-sen-gupta/cobol-rekt) *source of truth* that every LLM-written claim is cross-checked against.
 
 ## Where the hands-on material lives

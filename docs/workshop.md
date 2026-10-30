@@ -19,11 +19,11 @@ navigation_numbering: false
 
 <style>:root{--text-base-size:17px}html{font-size:var(--text-base-size)}.container{max-width:1200px!important}</style>
 
-*Version 1.0*
+*Version 1.1 — Oct 2026*
 
 Welcome! This workshop has two parts:
 
-1. **Getting Started with GitHub Copilot**: a single broad chapter for anyone who has never (or barely) used GitHub Copilot. It covers inline completions, Chat, Agent mode, the Copilot CLI, custom instructions, prompt files, custom agents, skills and MCP servers — all on real COBOL.
+1. **Getting Started with GitHub Copilot**: a single broad chapter for anyone who has never (or barely) used GitHub Copilot. It covers inline completions, Chat, Agent mode, agent harnesses, the Copilot CLI, custom instructions, prompt files, custom agents, skills and MCP servers — all on real COBOL.
 2. **Mainframe App Modernization**: how to use GitHub Copilot to modernize a mainframe application *without losing the business rules baked into it*. You work through four phases — rediscovery, substitution audit, re-architecture/re-write and deployment — on IBM's [Bank of Z](https://github.com/IBM/Bank-of-Z) with a pre-built kit of custom agents, prompt files and skills. A deterministic COBOL parser ([cobol-rekt](https://github.com/avishek-sen-gupta/cobol-rekt)) builds a *source of truth* that every LLM-written claim is checked against.
 
 <div class="info" data-title="Who is this for?">
@@ -184,7 +184,9 @@ Open `src/base/cics/cobol/XFRFUN.cbl` (the funds-transfer back-end), select the 
 
 ### Chat view (macOS `Ctrl+Cmd+I`, Windows `Ctrl+Alt+I`)
 
-The Chat side panel in "Ask" mode is for conversation about your code. Use `#` to attach context (files, symbols, selection) and `/` for built-in commands (`/explain`, `/fix`, `/tests`, `/new`).
+The Chat view is where you talk to agents next to your code. Before you send the first prompt of a session, the chat input lets you pick four things: the **Session Target** (the agent harness, see *Agent harnesses* below), the **Agent** (Ask, Agent, Plan or one of your custom agents), the **Language model** (or *Auto*) and the **Permissions** level.
+
+With the **Ask** agent selected, chat is for conversation about your code. Use `#` to attach context (files, symbols, selection) and type `/` to see the commands available in the current session (e.g. `/explain`, `/fix`, `/tests`, `/plan`, `/compact`). Which commands show up depends on the harness and agent you picked.
 
 ```text
 #file:src/base/cics/cobol/XFRFUN.cbl /explain how a transfer is validated
@@ -206,19 +208,37 @@ Read src/base/cics/cobol/BNKMENU.cbl and draw a mermaid diagram of every program
 
 Keep the answer — you will compare it with a deterministic tool in 1.6.
 
-<div class="tip" data-title="Pick the right mode">
+<div class="tip" data-title="Pick the right built-in agent">
 
-> - **Ask** — questions, explanations, information gathering
+> - **Ask** — questions, explanations, information gathering (read-only tools)
+> - **Plan** — research a task and produce an implementation plan for you to review (also via `/plan`)
 > - **Agent** — autonomous task execution, coding, execution
 
 </div>
 
 > **In the Copilot CLI:** there is no Ask/Agent toggle — the CLI is always agentic. Cycle into *plan mode* with `Shift+Tab` (macOS and Windows) to design before changes are made, and use `--allow-all` (or `--yolo`) for unattended runs where you accept the risk of skipping approval prompts.
 
+### Agent harnesses
+
+An **agent harness** is the software layer that turns a model into an agent: it runs the agent loop, wires up tools and approvals, and decides **which customization files it loads**. You pick it per session with the **Session Target** control, *before* the first prompt.
+
+| Session Target | What runs | What it means for this workshop |
+| --- | --- | --- |
+| **Copilot** (VS Code default) | The shared Copilot runtime (Copilot SDK), the same one behind the Copilot CLI and the GitHub Copilot app. Runs in the Agent Host, so sessions can continue in the background and in other interfaces. | Reads `.github/copilot-instructions.md`, `AGENTS.md`, `.github/instructions/`, `.github/agents/`, `.github/skills/` and MCP servers. **Does not load prompt files (`.prompt.md`)**, so the Chapter 2 kit doesn't run here. |
+| **Local** (use this one) | VS Code's built-in harness, running in the editor's extension host. The session is tied to the editor window. | Supports instructions, custom agents, skills and MCP **plus** prompt files, custom agent handoffs and the `/init` and `/create-*` shortcuts. |
+| **Claude** / **Codex** | Provider harnesses (Anthropic Claude Agent SDK, OpenAI Codex). | Use their own config locations (`CLAUDE.md`, `.claude/`, `.agents/`). Often disabled by enterprise policy. Not used in this workshop. |
+| **Cloud** | The Copilot harness on managed cloud compute. An execution target, not a separate harness (experimental). | Same customizations as Copilot, in a separate cloud workspace. Not used in this workshop. |
+
+<div class="info" data-title="Model ≠ harness">
+
+> Changing the model or the agent (Ask / Plan / Agent / custom) does **not** change the harness. Selecting a Claude model in a **Copilot** session still uses the Copilot harness. Whenever a customization "does nothing", first check the chat title prefix to see which harness you are in.
+
+</div>
+
 ## 1.2 GitHub Copilot CLI
 ![GitHub Copilot CLI](assets/cli.png)
 
-GitHub Copilot is IDE independent and available via the CLI. It gives you an agent setup in your terminal — handy when your mainframe sources live on a build server or jump host without a GUI.
+GitHub Copilot is IDE independent and available via the CLI. It gives you an agent setup in your terminal — handy when your mainframe sources live on a build server or jump host without a GUI. The CLI runs the same Copilot runtime as the **Copilot** harness in VS Code, so instructions, custom agents, skills and MCP servers work in both. Prompt files don't.
 
 **Try it.** After the installation, `cd` into your Bank of Z clone, run `copilot --banner` and ask:
 
@@ -241,6 +261,14 @@ Two things to keep in mind for both `copilot-instructions.md` and `AGENTS.md`:
 2) write them so they are verifiable. Avoid vague statements like *"write good code"* or *"follow best practices"*. Stick to rules that can be checked (e.g. "money is `PIC S9(10)V99`, never floating point"); plus concrete paths to files and folders the agent should or should not touch.
 
 Your fork ships with one [`.github/copilot-instructions.md`](https://github.com/jkordick/Bank-of-Z/blob/main/.github/copilot-instructions.md). Open and read it. Notice it is short, declarative and project-scoped: a layout table (where CICS, IMS, batch, copybooks and DDL live), fixed-format COBOL conventions, how errors flow (COMMAREA flags vs. `RESP`/`SQLCODE` → `ABNDPROC`), and work rules like *cite `file:LINE`* and *never guess transaction IDs*.
+
+<div class="info" data-title="Harness differences">
+
+> - **Local harness** (this workshop): attaches the root `AGENTS.md` by default. Nested `AGENTS.md` files such as `src/base/cics/AGENTS.md` are only discovered when you set both `chat.useAgentsMdFile` and the experimental `chat.useNestedAgentsMdFiles` to `true`. Personal instructions are stored in your VS Code profile.
+> - **Copilot harness and Copilot CLI:** discover `AGENTS.md` files at the repo root, in the working directory and in every folder in between. Personal always-on instructions live in `~/.copilot/copilot-instructions.md`, personal scoped ones in `~/.copilot/instructions/`.
+> - Run **Chat: Open Customizations** to manage all customizations in one place. It shows the ones for the harness that is currently selected.
+
+</div>
 
 > **In the Copilot CLI:** the same files are picked up automatically — `.github/copilot-instructions.md`, `.github/instructions/**/*.instructions.md` and `AGENTS.md` — when you launch `copilot` inside the repo. No additional configuration needed.
 
@@ -285,13 +313,13 @@ Run it in a Local chat with `/explain-program INQCUST`, then `/explain-program D
 
 > 1. Check the chat title. If it doesn't start with *Local*, you are not in the Local harness, and prompt files are ignored. Start a **New Chat** (`+`) and select **Local** in the **Session Target** picker (see 1.1).
 > 2. Check that the file is in `.github/prompts/` and ends in `.prompt.md`.
-> 3. Still missing? In the Chat view, select **…** → **Show Agent Debug Logs** to see which customization files were loaded.
+> 3. Still missing? In the Chat view, select **…** → **Show Agent Debug Logs** (or run **Developer: Open Agent Debug Logs**) to see which customization files were loaded.
 
 </div>
 
 Prompt files are the *primitive* the whole modernization kit in Chapter 2 is built on.
 
-> **In the Copilot CLI:** the CLI runs the Copilot harness, so `.prompt.md` files are not available as slash commands. For reusable workflows in the CLI, reach for custom agents (1.5) or skills (1.6) instead — or just paste the prompt body into your session.
+> **In the Copilot harness and the Copilot CLI:** `.prompt.md` files are not loaded. Pick a custom agent (1.5) and paste the prompt body, or turn the prompt into a user-invoked skill (see the end of 1.6).
 
 ## 1.5 Custom agents
 
@@ -301,7 +329,7 @@ Create `.github/agents/cobol-reviewer.agent.md`:
 
 <div class="tip" data-title="Tip">
 
-> Same trick as above: Command Palette (macOS `Cmd+Shift+P`, Windows `Ctrl+Shift+P`) -> *Create new agent...*
+> Run **Chat: New Custom Agent** from the Command Palette (macOS `Cmd+Shift+P`, Windows `Ctrl+Shift+P`), or open **Chat: Open Customizations** -> **Agents** -> **New Agent**. Select **Local** first, because the editor offers storage locations based on the selected harness.
 
 </div>
 
@@ -324,7 +352,9 @@ For the program(s) you are given, report findings as a table
 Cite only lines you have read. If you are unsure, say so.
 ```
 
-Pick the agent from the mode dropdown in VS Code Chat and ask it to review `src/base/cics/cobol/DBCRFUN.cbl`. Notice what the `tools` list does: the agent physically *cannot* edit files.
+Pick the agent from the agent picker in VS Code Chat (custom agents work in both the **Local** and the **Copilot** harness) and ask it to review `src/base/cics/cobol/DBCRFUN.cbl`. Notice what the `tools` list does: the agent physically *cannot* edit files.
+
+Set `user-invocable: false` to hide an agent from the picker but keep it available as a subagent. *Handoffs* (buttons that pass control to the next agent) are a Local-harness feature.
 
 > **In the Copilot CLI:** same files (`.github/agents/` for the repo, `~/.copilot/agents/` for personal). Pick one interactively with `/agent`, mention it in a prompt (*"use the cobol-reviewer agent to…"*), or launch it directly: `copilot --agent=cobol-reviewer --prompt "…"`. The CLI also ships built-in agents (Explore, Task, General purpose, Code review, Research, Rubber duck).
 
@@ -334,13 +364,20 @@ Pick the agent from the mode dropdown in VS Code Chat and ask it to review `src/
 
 </div>
 
-See [Creating custom agents](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/create-custom-agents) for full configuration options.
+See [Custom agents in VS Code](https://code.visualstudio.com/docs/agent-customization/custom-agents) and [Creating custom agents](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/create-custom-agents) for full configuration options.
 
 ## 1.6 Agent skills
 
 If you know *how* something should be done (e.g. "find every dependency of a COBOL program"), you can package that knowledge — instructions plus scripts — as a skill, and let the agent load it on demand.
 
-Skills live in `.github/skills/` (project) or `~/.copilot/skills/` (personal). Create one with **Chat: Open Customizations** → *Skills* → **New Skill**, or type `/create-skill` in a Local chat.
+Skills are folders with a `SKILL.md` file plus optional scripts, templates and examples. Where they live:
+
+| Scope | Copilot harness, Local harness & Copilot CLI | Also recognized |
+| --- | --- | --- |
+| Project (committed) | `.github/skills/<name>/SKILL.md` | `.agents/skills/`, `.claude/skills/` |
+| Personal | `~/.copilot/skills/<name>/SKILL.md` | `~/.agents/skills/`, `~/.claude/skills/` |
+
+Create one with **Chat: Open Customizations** → *Skills* → **New Skill**, type `/create-skill` in a Local chat, or just ask the agent: *"Create a project skill named `…` in `.github/skills/` that …"*.
 
 Your fork ships with three skills in [`.github/skills/`](https://github.com/jkordick/Bank-of-Z/tree/main/.github/skills):
 
@@ -360,17 +397,41 @@ Open [`.github/skills/cobol-dependency-scan/SKILL.md`](https://github.com/jkordi
 
 Compare the result with the mermaid diagram from 1.1. The scan shows that `BNKMENU` does not `XCTL` anywhere: it ends with `EXEC CICS RETURN TRANSID(...)` (pseudo-conversational hand-off to `ODCS`, `OCAC`, `OTFN`, …) and only `LINK`s to an abend handler through a *variable* (`WS-ABEND-PGM`). Did your Agent-mode diagram get that right? This is the core lesson of the whole workshop in miniature: **LLM interpretation is useful, deterministic tooling is verifiable — use both.**
 
-Copilot auto-loads a matching skill when it detects a relevant task, or you invoke it explicitly with `/cobol-dependency-scan`. Skills are an [open standard](https://agentskills.io/) — they work across VS Code, the Copilot CLI and other agentic tools.
+Copilot auto-loads a matching skill when it detects a relevant task, or you invoke it explicitly with `/cobol-dependency-scan`. Skills are an [open standard](https://agentskills.io/) — they work across VS Code (Local and Copilot harness), the Copilot CLI, the GitHub Copilot app and other skills-compatible agents.
 
-> **In the Copilot CLI:** the same `.github/skills/` and `~/.copilot/skills/` locations are honored — no per-tool config required.
+The `SKILL.md` frontmatter controls how a skill is discovered and invoked:
+
+| Field | Required | Purpose |
+| --- | --- | --- |
+| `name` | Yes | Lowercase letters, numbers and hyphens only. **Must match the folder name.** Invalid names make the skill fail silently. |
+| `description` | Yes | What the skill does **and when to use it**. The agent uses this to decide whether to load it automatically. |
+| `argument-hint` | No | Hint shown in the chat input when you invoke the skill as `/name` (e.g. `<PROGRAM>`). |
+| `user-invocable` | No | `false` hides the skill from the `/` menu but keeps automatic loading. Default `true`. |
+| `disable-model-invocation` | No | `true` means the agent never loads the skill on its own. It runs only when you type `/name`. Default `false`. |
+| `context` | No | `fork` runs the skill in its own subagent context instead of inline (experimental). |
+
+> **In the Copilot CLI:** the same `.github/skills/` and `~/.copilot/skills/` locations are honored — no per-tool config required. Use `/skills list` to see what is loaded, `/skills reload` after adding one mid-session, and `/skills info <name>` to check where it came from.
+
+<div class="tip" data-title="Skills as reusable prompts outside the Local harness">
+
+> A skill with `disable-model-invocation: true` behaves like a prompt file: it does nothing until you type `/name`, and the text after the command is its input. Unlike prompt files, it works in the Copilot harness, the Copilot CLI and the GitHub Copilot app. It can't pin an `agent`, `model` or `tools` list, so select the agent yourself first. To convert existing prompt files, select **Copilot** as the Session Target and run **Chat: Open Customizations** -> **Migrations** -> **Convert Prompt to Skills**. This workshop sticks with prompt files because the Chapter 2 kit relies on the `agent:` pin.
+
+</div>
 
 ## 1.7 MCP servers
 
 The [Model Context Protocol](https://modelcontextprotocol.io) lets GitHub Copilot connect to external tools — issue trackers, databases 🗄️, browsers, your own services and knowledge bases.
 
-In VS Code open the `Extensions` tab and type `@mcp` to see all available MCP servers.
+In VS Code, open the `Extensions` view and type `@mcp` to browse the MCP server gallery. You can also run **MCP: Add Server** for a guided setup, or go to **Chat: Open Customizations** -> **MCP Servers** -> **Add Server**.
 
-Configure custom MCP servers per workspace in `.vscode/mcp.json` (read by the Local harness; the Copilot harness and the CLI use [other files](https://code.visualstudio.com/docs/agent-customization/migrate-customizations#_migrate-mcp-servers)), e.g. the GitHub MCP server:
+VS Code understands two configuration formats:
+
+| Format | Location | Top-level key | Read by |
+| --- | --- | --- | --- |
+| **VS Code format** | `.vscode/mcp.json` or your VS Code profile | `servers` | Local harness (this workshop). VS Code forwards eligible servers to Copilot harness sessions, but **not** servers that use `${input:...}` prompts. |
+| **Portable Copilot format** | `.mcp.json` at the workspace root, or `~/.copilot/mcp-config.json` (user) | `mcpServers` | The Copilot harness and the Copilot CLI read it directly. |
+
+For this workshop, configure servers in `.vscode/mcp.json`, e.g. the GitHub MCP server:
 
 ```json
 {
@@ -383,7 +444,9 @@ Configure custom MCP servers per workspace in `.vscode/mcp.json` (read by the Lo
 }
 ```
 
-> **In the Copilot CLI:** the GitHub MCP server is preconfigured. Add more with `/mcp add` (interactive form, save with `Ctrl+S` — on macOS too). The CLI does not read `.vscode/mcp.json` — server definitions live in `~/.copilot/mcp-config.json` (or wherever `COPILOT_HOME` points).
+> **In the Copilot CLI:** the GitHub MCP server is preconfigured. Add more with `/mcp add` (interactive form, save with `Ctrl+S` — on macOS too). The CLI does not read `.vscode/mcp.json`. It reads `~/.copilot/mcp-config.json` (or wherever `COPILOT_HOME` points) and the project's `.mcp.json`.
+
+For secrets, reference environment variables and never commit literal values.
 
 Once connected, Agent mode can call those tools by name.
 
@@ -406,12 +469,14 @@ Once connected, Agent mode can call those tools by name.
 | Inline completion | Local, line-level help |
 | Inline chat | Targeted edits to a selection |
 | Chat (Ask) | Questions, explanations |
+| Chat (Plan) | A reviewable implementation plan before any edits |
 | Chat (Agent) | Autonomous tasks — the modernization workhorse |
+| Agent harness (Session Target) | Picks the runtime: **Local** (VS Code built-in, used here) or **Copilot** (shared with CLI & app) — determines which customizations load |
 | Copilot CLI | Same power, in the terminal / CI |
 | copilot-instructions.md<br>/AGENTS.md | Durable, project-wide rules |
-| Prompt files | Reusable, parameterizable workflows |
+| Prompt files | Reusable, parameterizable workflows — **Local harness only** |
 | Custom agents | Specialized personas + tool scoping |
-| Agent skills | Packaged multi-step capabilities, loaded on demand |
+| Agent skills | Packaged multi-step capabilities, loaded on demand — or invoked as `/name`, the portable alternative to prompt files |
 | MCP servers | Real-world tools and data the agent can use |
 
 You now have the full toolbox. The rest of the workshop is about **using it** on a real mainframe application.
@@ -590,12 +655,12 @@ If you followed the pre-requisites, you already have it: your fork of [`jkordick
 
 All workshop output goes to `docs/modernization/` in your fork (Bank of Z's own documentation site lives in `docs/docs/` — leave it alone). Commit after every step.
 
-**How the prompts and agents work together.** The `.github/agents/*.agent.md` files are the **personas** — each one is a Copilot mode with a scoped mission, ownership and tool access (e.g. `cobol-archaeologist` never touches legacy sources and only writes rediscovery artifacts, `target-architect` cannot run commands, `module-rewriter` can edit and run tests). The `.github/prompts/*.prompt.md` files are the **actions** — small, single-purpose commands you invoke from Chat. Each prompt has an `agent:` in its frontmatter, so running the prompt automatically switches Copilot into the right persona for the job.
+**How the prompts and agents work together.** The `.github/agents/*.agent.md` files are the **personas** — each one is a custom agent with a scoped mission, ownership and tool access (e.g. `cobol-archaeologist` never touches legacy sources and only writes rediscovery artifacts, `target-architect` cannot run commands, `module-rewriter` can edit and run tests). The `.github/prompts/*.prompt.md` files are the **actions** — small, single-purpose commands you invoke from Chat. Each prompt has an `agent:` in its frontmatter, so running the prompt automatically switches Copilot into the right persona for the job.
 
 **How to invoke them.**
 
 - **In VS Code:** start a **New Chat** with **Local** selected in the **Session Target** picker (see 1.1), type `/` and pick the prompt by name (they show up as `01-rediscovery-source-of-truth`, `01-rediscovery-bootstrap`, …). Copilot switches to the pinned agent, runs the prompt, produces the artifact, then stops.
-- **In the Copilot CLI:** the CLI runs the Copilot harness, which does not load prompt files. Pick the agent with `/agent` and paste the prompt body (or ask it to *"follow `.github/prompts/01-rediscovery-bootstrap.prompt.md`"*).
+- **In the Copilot harness or the Copilot CLI:** prompt files are not loaded. The custom agents and skills still work, so pick the agent from the agent picker (or with `/agent` in the CLI) and paste the prompt body (or ask it to *"follow `.github/prompts/01-rediscovery-bootstrap.prompt.md`"*). You can also convert the kit's prompts to user-invoked skills (see the tip at the end of 1.6). The conversion drops the `agent:` pin, so select the matching agent yourself before you invoke each skill.
 
 **The execution pattern is the same for every prompt.** Run one prompt → review the diff → commit → run the next. Each prompt writes to a named artifact under `docs/modernization/<phase>/`, cites `path/to/file:LINE` for anything specific, and stops. If it hits ambiguity, it appends to `docs/modernization/01-rediscovery/open-questions.md` instead of guessing. This is what makes the flow reviewable and controllable: every step is a small, git-diffable change against a persistent artifact — no big-bang generations, no invented behavior.
 
