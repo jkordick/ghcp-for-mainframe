@@ -62,7 +62,7 @@ You need the following before starting:
 | --- | --- |
 | A GitHub account | [Create free GitHub account](https://github.com/join) |
 | GitHub Copilot access | Free, Pro, Business or Enterprise — see below |
-| Visual Studio Code | [Download](https://code.visualstudio.com/) |
+| Visual Studio Code | [Download](https://code.visualstudio.com/). Chats in this workshop use the **Local** agent harness (see 1.1) |
 | GitHub Copilot extension(s) | [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) and [Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat) |
 | Java 21+ | Any JDK, e.g. [Microsoft Build of OpenJDK](https://learn.microsoft.com/java/openjdk/download) — runs the cobol-rekt parser in Chapter 2 |
 | Python 3.9+ | [Install](https://www.python.org/downloads/) — turns the parser output into readable Markdown |
@@ -121,7 +121,23 @@ Every exercise in this chapter uses your clone of Bank of Z. Open it in VS Code 
 > 2. Open the **Session Target** picker in the chat input and select **Local**.
 > 3. Check: the chat title now starts with *Local*.
 >
-> Pick the harness **before** you send the first prompt. You can't change it later in the same session. Custom instructions, custom agents, skills and `.vscode/mcp.json` all work in Local.
+> Pick the harness **before** you send the first prompt. A Local session can later be handed off to another harness, but it can't come back to Local, so if you picked the wrong one, start a new chat. Local is only available in the editor's Chat view, not in the Agents window. Custom instructions, custom agents, skills and `.vscode/mcp.json` all work in Local.
+
+</div>
+
+<div class="tip" data-title="Local is not in the Session Target picker?">
+
+> Update VS Code and the Copilot extensions first. If Local is still missing, add these (experimental) settings to your user `settings.json`, as described in the [agent harness FAQ](https://code.visualstudio.com/docs/agents/run/agent-harnesses#_can-i-keep-local-available-while-migrating):
+>
+> ```json
+> {
+>   "chat.editor.localAgent.enabled": true,
+>   "chat.defaultToCopilotHarness": false,
+>   "chat.editor.preferCopilotHarness": false
+> }
+> ```
+>
+> Organization policy can override these settings, hide Local, or automatically move a Local session to the Copilot harness. If that happens on a managed machine, ask your administrator, or use the CLI path described in 1.4 and 2.6.1.
 
 </div>
 
@@ -248,7 +264,7 @@ argument-hint: Program name, e.g. INQCUST
 agent: agent
 tools: ['read', 'search']
 ---
-Explain the COBOL program named in the chat input. Find it under `src/base/`.
+Explain the COBOL program named in the chat input. If no program name was given, ask for one before reading any files. Find it under `src/base/`.
 Answer with exactly these sections and cite `path/to/file:LINE` for every claim:
 
 1. **Purpose** — one paragraph, business language.
@@ -267,7 +283,7 @@ Run it in a Local chat with `/explain-program INQCUST`, then `/explain-program D
 
 <div class="tip" data-title="Prompt not showing up?">
 
-> 1. Check the chat title. If it doesn't start with *Local*, you are in the Copilot harness, which ignores prompt files. Start a **New Chat** (`+`) and select **Local** in the **Session Target** picker (see 1.1).
+> 1. Check the chat title. If it doesn't start with *Local*, you are not in the Local harness, and prompt files are ignored. Start a **New Chat** (`+`) and select **Local** in the **Session Target** picker (see 1.1).
 > 2. Check that the file is in `.github/prompts/` and ends in `.prompt.md`.
 > 3. Still missing? In the Chat view, select **…** → **Show Agent Debug Logs** to see which customization files were loaded.
 

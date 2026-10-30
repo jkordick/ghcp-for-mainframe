@@ -29,7 +29,7 @@ This repository contains only the workshop text. Everything you run lives in the
 ## Pre-reqs
 
 - A GitHub account with Copilot access (Free, Pro, Business or Enterprise)
-- VS Code with the GitHub Copilot + Copilot Chat extensions (IBM Z Open Editor optional)
+- VS Code with the GitHub Copilot + Copilot Chat extensions (IBM Z Open Editor optional). Chats must use the **Local** agent harness, because the default Copilot harness doesn't load prompt files (see workshop 1.1).
 - Java 21+ and Python 3.9+ (for the cobol-rekt source of truth)
 - GitHub CLI (`gh`) and the GitHub Copilot CLI
 - bash / zsh (Git Bash or WSL on Windows)
