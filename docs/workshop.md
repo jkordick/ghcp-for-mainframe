@@ -65,6 +65,7 @@ You need the following before starting:
 | Visual Studio Code | [Download](https://code.visualstudio.com/). Chats in this workshop use the **Local** agent harness (see 1.1) |
 | GitHub Copilot extension(s) in VS Code | [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) and [Copilot Chat](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat) |
 | Java 21+ | Any JDK, e.g. [Microsoft Build of OpenJDK](https://learn.microsoft.com/java/openjdk/download) |
+| Maven 3.8+ | [Install](https://maven.apache.org/install.html) — phase 3b builds and tests the rewritten Java module |
 | Python 3.9+ | [Install](https://www.python.org/downloads/) |
 | GitHub CLI | [Install](https://cli.github.com/) |
 | GitHub Copilot CLI | [Install](https://github.com/github/copilot-cli) |
@@ -74,7 +75,7 @@ You need the following before starting:
 
 ![Bank of Z fork](./assets/bankofz-fork.png)
 
-**Working in a Codespace instead of locally?** On *your fork*, select **Code** → **Codespaces** → **Create codespace on main**. The fork ships a [dev container](https://github.com/jkordick/Bank-of-Z/blob/main/.devcontainer/devcontainer.json) with everything this workshop needs: Java 21, Python 3.12, the GitHub CLI, the GitHub Copilot CLI and the Copilot Chat extension. The first build takes a minute or two. The codespace then opens VS Code in the browser with your fork checked out. You can skip installing the tools from the table above. Add the optional IBM Z Open Editor from the Extensions view if you want it.
+**Working in a Codespace instead of locally?** On *your fork*, select **Code** → **Codespaces** → **Create codespace on main**. The fork ships a [dev container](https://github.com/jkordick/Bank-of-Z/blob/main/.devcontainer/devcontainer.json) with everything this workshop needs: a Java 21 JDK, Maven, Python 3.12, the GitHub CLI, the GitHub Copilot CLI and the Copilot Chat extension. The first build takes a minute or two. The codespace then opens VS Code in the browser with your fork checked out. You can skip installing the tools from the table above. Add the optional IBM Z Open Editor from the Extensions view if you want it.
 
 ![Create a codespace on your fork](./assets/create-codespace.png)
 
@@ -360,7 +361,7 @@ Set `user-invocable: false` to hide an agent from the picker but keep it availab
 
 <div class="info" data-title="Already in your fork">
 
-> `.github/agents/` already contains five agents you will use in Chapter 2 — one per modernization phase: `cobol-archaeologist`, `substitution-auditor`, `target-architect`, `module-rewriter` and `deployment-engineer`. Have a quick look at how differently their `tools` are scoped.
+> `.github/agents/` already contains five agents you will use in Chapter 2 — one per modernization phase: `cobol-archaeologist`, `substitution-auditor`, `target-architect`, `module-rewriter` and `deployment-engineer`. Have a quick look at how differently their `tools` are scoped. A sixth one, `educated-guesser`, is a workshop helper: it stands in for the domain expert when a phase agent stops on an open question (see Chapter 2).
 
 </div>
 
@@ -664,6 +665,12 @@ All workshop output goes to `docs/modernization/` in your fork (Bank of Z's own 
 
 **The execution pattern is the same for every prompt.** Run one prompt → review the diff → commit → run the next. Each prompt writes to a named artifact under `docs/modernization/<phase>/`, cites `path/to/file:LINE` for anything specific, and stops. If it hits ambiguity, it appends to `docs/modernization/01-rediscovery/open-questions.md` instead of guessing. This is what makes the flow reviewable and controllable: every step is a small, git-diffable change against a persistent artifact — no big-bang generations, no invented behavior.
 
+<div class="info" data-title="When an agent stops on an open question">
+
+> Stopping is the agent doing its job: it raised a question instead of guessing. In a real project this is the moment to take the question to a domain expert (or the architect) and record their answer. Today you don't have one, so let the `educated-guesser` agent stand in: select it (agent picker in VS Code, `/agent` or `copilot --agent=educated-guesser` in the CLI) and say *"The last run stopped on open questions. Unblock it."* It writes a short, source-grounded `ASSUMED` answer for each blocker under **Workshop assumptions** in `open-questions.md` and tells you which prompt to re-run. Review and commit its answers, then re-run that prompt. Use it whenever a later phase stops the same way.
+
+</div>
+
 <div class="tip" data-title="One prompt at a time">
 
 > Resist the urge to chain prompts inside a single Chat turn. The value of the breakdown is that a human sees each artifact before the next prompt runs. Chaining collapses the review points.
@@ -712,7 +719,7 @@ Agent: `cobol-archaeologist` (read-only on legacy sources). Artifacts land in `d
 2. **`/01-rediscovery-business-rules`** — pick **one** program from the reading order, e.g. `INQACC` or `XFRFUN`. Appends business rules to `business-rules.md` with IDs (`XFRFUN-R01`, …), `file:LINE` citations and worked examples in COMMAREA terms — and ends with a **Decision coverage** table mapping every decision point from the digest to a rule, to `technical` (pure `RESP`/`SQLCODE` plumbing) or to `UNCOVERED`. Re-run per program — do not sweep the whole repo in one go.
 3. **`/01-rediscovery-data-model`** 🗄️ — reverse-engineers DB2 tables from the DDL in `.setup/jcl/*/Db2-create.j2`, record layouts from copybooks, IMS segments from the DBDs, and encoded value domains from `88`-levels and defensive code. Appends to `data-model.md` (with a mermaid ER diagram).
 4. **`/01-rediscovery-integrations`** — inventories every external touchpoint (DB2 tables 🗄️, CICS files, transactions, IMS, MQ, batch/JCL, z/OS Connect APIs) with direction and a load-bearing flag, and **reconciles** it with `call-graph.md` and `data-access.md` — anything in one but not the other is called out.
-5. **`/01-rediscovery-open-questions`** — final sweep. Consolidates hedging language, unexplained codes, dead-branch guesses, tooling gaps and **contradictions with the source of truth** into `open-questions.md` with blast-radius annotations. Take this list to the domain experts before you move on.
+5. **`/01-rediscovery-open-questions`** — final sweep. Consolidates hedging language, unexplained codes, dead-branch guesses, tooling gaps and **contradictions with the source of truth** into `open-questions.md` with blast-radius annotations. In a real project you would now take this list to the domain experts. In this workshop, review it, then run `educated-guesser` (see *When an agent stops on an open question* above) so phases 2–4 are not blocked by unanswered questions.
 
 <div class="tip" data-title="Exercise — catch the LLM">
 
